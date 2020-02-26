@@ -30,9 +30,11 @@ class UI(QDialog):
     def __init__(self, parent=None):
         super(UI, self).__init__(parent)
 
+        self.confidence_label = QLabel("Confidece interval")
+        self.confidence_value = QComboBox()
+        self.confidence_value.addItems(["0.5", "0.6", "0.7", "0.8", "0.9"])
         self.reset = QPushButton("Reset")
         self.run = QPushButton("Execute")
-        self.multi = QCheckBox("Multi")
         self.useStylePaletteCheckBox = QCheckBox("Light")
 
         self.tab1hbox = QHBoxLayout()
@@ -117,13 +119,13 @@ class UI(QDialog):
 
     def create_menu(self):
         self.useStylePaletteCheckBox.setChecked(True)
-        self.multi.setChecked(True)
         self.reset.setFlat(True)
         self.run.setFlat(True)
 
-        self.topLayout.addWidget(self.useStylePaletteCheckBox)
-        self.topLayout.addWidget(self.multi)
+        self.topLayout.addWidget(self.confidence_label)
+        self.topLayout.addWidget(self.confidence_value)
         self.topLayout.addStretch(1)
+        self.topLayout.addWidget(self.useStylePaletteCheckBox)
         self.topLayout.addWidget(self.run)
         self.topLayout.addWidget(self.reset)
 
