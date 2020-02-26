@@ -35,42 +35,20 @@ class UI(QDialog):
         self.multi = QCheckBox("Multi")
         self.useStylePaletteCheckBox = QCheckBox("Light")
 
-        # prognosis
-
         self.tab1hbox = QHBoxLayout()
         self.Btab1 = QWidget()
         self.Btable = QTableWidget(self.Btab1)
         self.bottomTabWidget = QTabWidget()
 
-        self.Lline3 = QLineEdit()
-        self.Lline2 = QLineEdit()
-        self.Lline1 = QLineEdit()
-        self.Llabel4 = QLabel("X source file:")
-        self.Llabel3 = QLabel("To file:")
-        self.Llabel2 = QLabel("Y source file:")
-        self.Llabel1 = QLabel("Sample size:")
-        self.LspinBox = QSpinBox()
-        self.topLeftGroupBox = QGroupBox("Data")
-
-        self.Mlabel4 = QLabel("X3:")
-        self.Mlabel3 = QLabel("X2:")
-        self.Mlabel2 = QLabel("X1:")
-        self.Mlabel1 = QLabel("Y:")
-        self.MspinBox4 = QSpinBox()
-        self.MspinBox3 = QSpinBox()
-        self.MspinBox2 = QSpinBox()
-        self.MspinBox1 = QSpinBox()
-        self.topMidGroupBox = QGroupBox("Dimensions")
-
-        self.Rlabel6 = QLabel("X3 Power:")
-        self.Rlabel5 = QLabel("X2 Power:")
-        self.Rlabel4 = QLabel("X1 Power:")
-        self.Rlabel1 = QLabel("Polynoms:")
-        self.RspinBox4 = QSpinBox()
-        self.RspinBox3 = QSpinBox()
-        self.RspinBox2 = QSpinBox()
-        self.RcomboBox = QComboBox()
-        self.topMid2GroupBox = QGroupBox("Polynoms")
+        self.Mlabel4 = QLabel("For S4:")
+        self.Mlabel3 = QLabel("For S3:")
+        self.Mlabel2 = QLabel("For S2:")
+        self.Mlabel1 = QLabel("For S1:")
+        self.MspinBox4 = QLabel("-")
+        self.MspinBox3 = QLabel("-")
+        self.MspinBox2 = QLabel("-")
+        self.MspinBox1 = QLabel("-")
+        self.topMidGroupBox = QGroupBox("Results")
 
         self.results = QLabel()
         self.originalPalette = QApplication.palette()
@@ -84,7 +62,6 @@ class UI(QDialog):
         self.create_top_mid_group_box()
         self.create_bottom_group_box()
         self.create_menu()
-
         self.canvas1 = Graph(self, width=6, height=3, dpi=100, title='Y1')
         self.canvas2 = Graph(self, width=6, height=3, dpi=100, title='Y2')
         self.canvas3 = Graph(self, width=6, height=3, dpi=100, title='Y3')
@@ -92,15 +69,18 @@ class UI(QDialog):
 
         self.mainLayout = QGridLayout()
 
-        self.mainLayout.addLayout(self.topLayout, 0, 0, 1, 4)
-        self.mainLayout.addWidget(self.bottomTabWidget, 1, 1, 1, 2)
-        self.mainLayout.addWidget(self.topMidGroupBox, 2, 1, 2, 2)
+        self.mainLayout.addLayout(self.topLayout, 0, 0, 1, 6)
+        self.mainLayout.addWidget(self.bottomTabWidget, 1, 2, 1, 2)
+        self.mainLayout.addWidget(self.topMidGroupBox, 2, 2, 2, 2)
 
         self.mainLayout.addWidget(self.canvas1, 1, 0)
         self.mainLayout.addWidget(self.canvas2, 2, 0)
-        self.mainLayout.addWidget(self.canvas3, 1, 3)
-        self.mainLayout.addWidget(self.canvas4, 2, 3)
+        self.mainLayout.addWidget(self.canvas3, 1, 4)
+        self.mainLayout.addWidget(self.canvas4, 2, 4)
+
         self.setLayout(self.mainLayout)
+
+        self.resize(1300, 600)
 
         self.change_palette()
 
@@ -147,34 +127,6 @@ class UI(QDialog):
         self.topLayout.addWidget(self.run)
         self.topLayout.addWidget(self.reset)
 
-    def create_top_left_group_box(self):
-
-        self.LspinBox.setRange(0, 10000)
-        self.inputs.append(self.LspinBox)
-
-        self.Lline1.setPlaceholderText(' *.txt')
-        self.inputs.append(self.Lline1)
-
-        self.Lline2.setPlaceholderText(' *.txt')
-        self.inputs.append(self.Lline2)
-
-        self.Lline3.setPlaceholderText(' *.txt')
-        self.inputs.append(self.Lline3)
-
-        layout = QGridLayout()
-
-        layout.addWidget(self.Llabel1, 0, 0)
-        layout.addWidget(self.LspinBox, 0, 1)
-        layout.addWidget(self.Llabel2, 1, 0)
-        layout.addWidget(self.Llabel3, 3, 0)
-        layout.addWidget(self.Llabel4, 2, 0)
-        layout.addWidget(self.Lline1, 1, 1)
-        layout.addWidget(self.Lline2, 2, 1)
-        layout.addWidget(self.Lline3, 3, 1)
-
-        # self.topLeftGroupBox.setFixedWidth(235)
-        self.topLeftGroupBox.setLayout(layout)
-
     def create_top_mid_group_box(self):
 
         self.inputs.append(self.MspinBox1)
@@ -187,95 +139,46 @@ class UI(QDialog):
 
         layout = QGridLayout()
 
-        layout.addWidget(self.MspinBox1, 0, 1)
-        layout.addWidget(self.MspinBox2, 1, 1)
-        layout.addWidget(self.MspinBox3, 2, 1)
-        layout.addWidget(self.MspinBox4, 3, 1)
-        layout.addWidget(self.Mlabel1, 0, 0)
+        layout.addWidget(self.MspinBox1, 0, 1, 1, 4)
+        layout.addWidget(self.MspinBox2, 1, 1, 1, 4)
+        layout.addWidget(self.MspinBox3, 2, 1, 1, 4)
+        layout.addWidget(self.MspinBox4, 3, 1, 1, 4)
+        layout.addWidget(self.Mlabel1, 0, 0, 1, 1)
         layout.addWidget(self.Mlabel2, 1, 0)
         layout.addWidget(self.Mlabel3, 2, 0)
         layout.addWidget(self.Mlabel4, 3, 0)
 
-        self.topMidGroupBox.setFixedWidth(600)
+        self.topMidGroupBox.setFixedWidth(645)
 
         self.topMidGroupBox.setLayout(layout)
-
-    def create_top_mid2_group_box(self):
-
-        self.RcomboBox.addItems(["Chebyshev", "Hermite", "Legendre"])
-
-        self.RspinBox2.setRange(0, 1000)
-        self.inputs.append(self.RspinBox2)
-
-        self.RspinBox3.setRange(0, 1000)
-        self.inputs.append(self.RspinBox3)
-
-        self.RspinBox4.setRange(0, 1000)
-        self.inputs.append(self.RspinBox4)
-
-        layout = QGridLayout()
-
-        layout.addWidget(self.RcomboBox, 0, 1)
-        layout.addWidget(self.RspinBox2, 2, 1)
-        layout.addWidget(self.RspinBox3, 3, 1)
-        layout.addWidget(self.RspinBox4, 4, 1)
-
-        layout.addWidget(self.Rlabel1, 0, 0)
-        layout.addWidget(self.Rlabel4, 2, 0)
-        layout.addWidget(self.Rlabel5, 3, 0)
-        layout.addWidget(self.Rlabel6, 4, 0)
-
-        # self.topMid2GroupBox.setFixedWidth(200)
-
-        self.topMid2GroupBox.setLayout(layout)
 
     def create_bottom_group_box(self):
         self.Btable.setColumnCount(7)
         self.Btable.setRowCount(0)
-        self.Btable.setHorizontalHeaderLabels(["               ",
-                                               "               ",
-                                               "               ",
-                                               "               ",
-                                               "               ",
-                                               "               ",
-                                               "               "])
-        self.Btable.resizeColumnsToContents()
-        self.Btable.horizontalHeader().setStretchLastSection(True)
-        self.Btable.insertRow(0)
-        for i in range(7):
-            self.Btable.setItem(0, i, QTableWidgetItem(' '))
+        self.Btable.setHorizontalHeaderLabels(["       1        ",
+                                               "       2        ",
+                                               "       3        ",
+                                               "       4        ",
+                                               "       5        ",
+                                               "       6        ",
+                                               "       7        "])
+        for j in range(4):
+            self.Btable.insertRow(j)
+            for i in range(7):
+                self.Btable.setColumnWidth(i, 622/7)
+
+                self.Btable.setItem(j, i, QTableWidgetItem(''))
+        self.Btable.setFixedHeight(144)
 
         self.tab1hbox.setContentsMargins(5, 5, 5, 5)
         self.tab1hbox.addWidget(self.Btable)
 
         self.Btab1.setLayout(self.tab1hbox)
 
-        self.bottomTabWidget.addTab(self.Btab1, "Parameters")
+        self.bottomTabWidget.addTab(self.Btab1, "S[ i ] / Ф[ j ]")
 
     def clr(self):
         self.Btable.clear()
-        for i in range(4):
-            f = open("data/program_data_h" + str(i) + ".txt", 'w+')
-            f.write('')
-            f.close()
-        for i in range(3):
-            f = open("data/program_data_r" + str(i) + ".txt", 'w+')
-            f.write('')
-            f.close()
-        self.Btable.setColumnCount(7)
-        self.Btable.setRowCount(0)
-        self.Btable.setHorizontalHeaderLabels(["     Time     ",
-                                               "           У1           ",
-                                               "           У2           ",
-                                               "           У3           ",
-                                               "                      Status                      ",
-                                               "     Danger level      ",
-                                               "               Cause               "])
-        self.Btable.resizeColumnsToContents()
-        self.Btable.horizontalHeader().setStretchLastSection(True)
-        self.Btable.insertRow(0)
-        for i in range(7):
-            self.Btable.setItem(0, i, QTableWidgetItem(' '))
 
     def collect_data(self):
         values = [el.value() if type(el) != QLineEdit else el.text() for el in self.inputs]
@@ -283,20 +186,6 @@ class UI(QDialog):
 
     def execute(self):
         self.useStylePaletteCheckBox.setEnabled(False)
-        self.Btable.setColumnCount(7)
-        self.Btable.setRowCount(0)
-        self.Btable.setHorizontalHeaderLabels(["     Time     ",
-                                               "           У1           ",
-                                               "           У2           ",
-                                               "           У3           ",
-                                               "                      Status                      ",
-                                               "     Danger level      ",
-                                               "               Cause               "])
-        self.Btable.resizeColumnsToContents()
-        self.Btable.horizontalHeader().setStretchLastSection(True)
-        self.Btable.insertRow(0)
-        for i in range(7):
-            self.Btable.setItem(0, i, QTableWidgetItem(' '))
 
 
 if __name__ == '__main__':
