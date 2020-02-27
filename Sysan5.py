@@ -6,9 +6,11 @@ from PyQt5.QtGui import QPalette, QColor, QIcon
 import sys
 from PyQt5.QtCore import Qt
 from functools import reduce
+from sklearn.preprocessing import Normalizer
 import numpy as np
 import pandas as pd
 from itertools import combinations
+
 
 class Graph(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100, title=None):
@@ -27,7 +29,7 @@ class UI(QDialog):
     def __init__(self, parent=None):
         super(UI, self).__init__(parent)
 
-        self.confidence_label = QLabel("Confidece interval")
+        self.confidence_label = QLabel("Confidence interval")
         self.confidence_value = QComboBox()
         self.confidence_value.addItems(["0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9"])
         self.reset = QPushButton("Reset")
@@ -179,6 +181,12 @@ class UI(QDialog):
     def clr(self):
         self.Btable.clear()
 
+    def view_results(self, solver):
+        for i in range(self.Btable.rowCount()):
+            for j in range(self.Btable.colorCount()):
+                self.Btable.setItem(i, j, '[' + str(solver.intervals_left) + ' ; ' + str(solver.intervals_right) + ']')
+        pass
+
     def execute(self):
         self.useStylePaletteCheckBox.setEnabled(False)
         solver = Solver(self.confidence_value)
@@ -203,8 +211,14 @@ class Solver:
         self.select = lambda i, j: {k: v for k, v in zip(self.params,
                                                          [matrix.iat[i, j] for matrix in self.tables.values()])}
         self.t_plus_t_minus = {'min': self.intervals_left.apply(min, axis=1),
-                               'max': self.intervals_right.apply(max, axis=1)
-                               }
+                               'max': self.intervals_right.apply(max, axis=1)}
+
+    def classificator(self):
+        transformer_intervals_left = Normalizer().fit(self.intervals_left.to_numpy())
+        transformer_intervals_right = Normalizer().fit(self.intervals_right.to_numpy())
+        trasformer_t_minus = Normalizer().fit(np.arange(20, 70, 5))
+        trasformer_t_plus = Normalizer().fit(np.arange(1, 12))
+
 
     def solve(self):
         pass
