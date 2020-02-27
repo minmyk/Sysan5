@@ -197,9 +197,14 @@ class Solver:
     def __init__(self, confidence_interval):
         self.params = ['a_hat', 'I_p_hat', 'I_t_hat', 'I_d_hat']
         self.tables = {k: v for k, v in zip(self.params, list(collect_data()))}
+        self.intervals_left = None
+        self.intervals_right = None
         self.confidence_interval = confidence_interval
         self.select = lambda i, j: {k: v for k, v in zip(self.params,
                                                          [matrix.iat[i, j] for matrix in self.tables.values()])}
+        self.t_plus_t_minus = {'min': self.intervals_left.apply(min, axis=1),
+                               'max': self.intervals_right.apply(max, axis=1)
+                               }
 
     def solve(self):
         pass
