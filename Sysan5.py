@@ -4,14 +4,11 @@ from PyQt5.QtWidgets import QSpinBox, QTableWidget, QLabel, QApplication, QLineE
     QHBoxLayout, QComboBox, QGridLayout, QStyleFactory, QCheckBox, QPushButton, QWidget, QTableWidgetItem, QTabWidget
 from PyQt5.QtGui import QPalette, QColor, QIcon
 import sys
-import re
 from PyQt5.QtCore import Qt
 from functools import reduce
 import numpy as np
 import pandas as pd
 from itertools import combinations
-import copy
-
 
 class Graph(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100, title=None):
@@ -46,10 +43,10 @@ class UI(QDialog):
         self.Mlabel3 = QLabel("For S3:")
         self.Mlabel2 = QLabel("For S2:")
         self.Mlabel1 = QLabel("For S1:")
-        self.MspinBox4 = QLabel("-")
-        self.MspinBox3 = QLabel("-")
-        self.MspinBox2 = QLabel("-")
-        self.MspinBox1 = QLabel("-")
+        self.MspinBox4 = QLineEdit("")
+        self.MspinBox3 = QLineEdit("")
+        self.MspinBox2 = QLineEdit("")
+        self.MspinBox1 = QLineEdit("")
         self.topMidGroupBox = QGroupBox("Results")
 
         self.results = QLabel()
@@ -182,12 +179,9 @@ class UI(QDialog):
     def clr(self):
         self.Btable.clear()
 
-    def collect_data(self):
-        values = [el.value() if type(el) != QLineEdit else el.text() for el in self.inputs]
-        return values
-
     def execute(self):
         self.useStylePaletteCheckBox.setEnabled(False)
+        solver = Solver(self.confidence_value)
 
 
 def collect_data(path='data/sys_lab5.txt'):
@@ -201,8 +195,14 @@ def collect_data(path='data/sys_lab5.txt'):
 
 class Solver:
     def __init__(self, confidence_interval):
-        self.tables = {k: v for k, v in zip(['a_hat', 'I_p', 'I_t', 'I_d'], list(collect_data()))}
+        self.params = ['a_hat', 'I_p_hat', 'I_t_hat', 'I_d_hat']
+        self.tables = {k: v for k, v in zip(self.params, list(collect_data()))}
         self.confidence_interval = confidence_interval
+        self.select = lambda i, j: {k: v for k, v in zip(self.params,
+                                                         [matrix.iat[i, j] for matrix in self.tables.values()])}
+
+    def solve(self):
+        pass
 
 
 if __name__ == '__main__':
