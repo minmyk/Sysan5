@@ -32,7 +32,7 @@ class UI(QDialog):
 
         self.confidence_label = QLabel("Confidece interval")
         self.confidence_value = QComboBox()
-        self.confidence_value.addItems(["0.5", "0.6", "0.7", "0.8", "0.9"])
+        self.confidence_value.addItems(["0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9"])
         self.reset = QPushButton("Reset")
         self.run = QPushButton("Execute")
         self.useStylePaletteCheckBox = QCheckBox("Light")
@@ -190,17 +190,19 @@ class UI(QDialog):
         self.useStylePaletteCheckBox.setEnabled(False)
 
 
-class Solver:
-    def __init__(self):
-        pass
+def collect_data(path='data/sys_lab5.txt'):
+    file = open(path, 'r')
+    data = file.read()
+    file.close()
+    for matrix in data.split(';'):
+        yield pd.DataFrame(np.array([el.split() for el in matrix.split('\n') if el]).flatten().reshape(4, 7)).apply(
+                pd.to_numeric)
 
-    def collect_data(self):
-        file = open('data/sys_lab5.txt', 'r')
-        data = file.read()
-        file.close()
-        for matrix in data.split(';'):
-            yield pd.DataFrame(np.array([el.split() for el in matrix.split('\n') if el]).flatten().reshape(4, 7)).apply(
-                    pd.to_numeric)
+
+class Solver:
+    def __init__(self, confidence_interval):
+        self.tables = {k: v for k, v in zip(['a_hat', 'I_p', 'I_t', 'I_d'], list(collect_data()))}
+        self.confidence_interval = confidence_interval
 
 
 if __name__ == '__main__':
