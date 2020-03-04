@@ -5,12 +5,12 @@ class IneqSolver(object):
         self.param_dict = param_dict
         self.linspace = linspace
         self.solution = None
-        self.inequlity = lambda t, bound1, bound2, params: (
+        self.inequlity = lambda f, t, bound1, bound2, params: (
             f(t, **params) <= bound2
         ) * (f(t, **params) >= bound1)
 
     def solve(self, func, bound1, bound2):
-        self.solution = inequlity(func, self.linspace, bound1, bound2, self.params)
+        self.solution = self.inequlity(func, self.linspace, bound1, bound2, self.params)
         return self.solution
 
     def get_interval(self):
