@@ -27,8 +27,8 @@ def alpha(a_hat, I_p_hat, I_d_hat, I_t_hat):
 
 
 def I_p(t, I_p_hat):
-    a = (1 - 1e-4 ** 2) / (1 - I_p_hat - 1e-4) ** 2 - 1
-    return min(t / (1 + a * t ** 2) + I_p_hat, 1)
+    a = (1-1e-4**2)/(1-I_p_hat - 1e-4)**2 - 1
+    return min(t/np.sqrt(1+a*t**2)+I_p_hat, 1)
 
 
 def I_d(t, I_d_hat):
