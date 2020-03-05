@@ -1,13 +1,13 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt5.QtWidgets import QTableWidget, QLabel, QApplication, QLineEdit, QDialog, QGroupBox, \
+from PyQt5.QtWidgets import QTableWidget, QSpinBox, QLabel, QApplication, QLineEdit, QDialog, QGroupBox, \
     QHBoxLayout, QComboBox, QGridLayout, QStyleFactory, QCheckBox, QPushButton, QWidget, QTableWidgetItem, QTabWidget
 from PyQt5.QtGui import QPalette, QColor, QIcon
 import sys
 from PyQt5.QtCore import Qt
-from sklearn.preprocessing import Normalizer
 import pandas as pd
 from solver.IneqSolver import *
+from itertools import product
 
 
 class Graph(FigureCanvas):
@@ -33,7 +33,10 @@ class UI(QDialog):
         self.reset = QPushButton("Reset")
         self.run = QPushButton("Execute")
         self.useStylePaletteCheckBox = QCheckBox("Light")
-
+        self.i_label = QLabel('i')
+        self.i = QSpinBox()
+        self.j_label = QLabel('j')
+        self.j = QSpinBox()
         self.tab1hbox = QHBoxLayout()
         self.Btab1 = QWidget()
         self.Btable = QTableWidget(self.Btab1)
@@ -61,10 +64,10 @@ class UI(QDialog):
         self.create_middle_box()
         self.create_bottom_box()
 
-        self.canvas1 = Graph(self, width=6, height=3, dpi=100, title='Y1')
-        self.canvas2 = Graph(self, width=6, height=3, dpi=100, title='Y2')
-        self.canvas3 = Graph(self, width=6, height=3, dpi=100, title='Y3')
-        self.canvas4 = Graph(self, width=6, height=3, dpi=100, title='Y4')
+        self.canvas1 = Graph(self, width=6, height=3, dpi=100, title='I_t')
+        self.canvas2 = Graph(self, width=6, height=3, dpi=100, title='I_p')
+        self.canvas3 = Graph(self, width=6, height=3, dpi=100, title='I_d')
+        self.canvas4 = Graph(self, width=6, height=3, dpi=100, title='I')
 
         self.mainLayout = QGridLayout()
         self.mainLayout.addLayout(self.topBox, 0, 0, 1, 6)
@@ -117,6 +120,11 @@ class UI(QDialog):
 
         self.topBox.addWidget(self.confidence_label)
         self.topBox.addWidget(self.confidence_value)
+        self.topBox.addStretch(1)
+        self.topBox.addWidget(self.i_label)
+        self.topBox.addWidget(self.i)
+        self.topBox.addWidget(self.j_label)
+        self.topBox.addWidget(self.j)
         self.topBox.addStretch(1)
         self.topBox.addWidget(self.useStylePaletteCheckBox)
         self.topBox.addWidget(self.run)
@@ -174,27 +182,51 @@ class UI(QDialog):
     def view(self, solver):
         for i in range(4):
             for j in range(7):
-                if solver.intervals_left[i][j] != 0 and solver.intervals_right[i][j] != 0:
+                if solver.intervals_right[i][j] != 0:
                     self.Btable.setItem(i,
                                         j,
                                         QTableWidgetItem('[' + str(np.round(solver.intervals_left[i][j], 2)) +
                                                          ' ; ' + str(np.round(solver.intervals_right[i][j], 2)) + ']'))
-                else:
+                elif solver.mask.to_numpy()[i, j]:
                     self.Btable.setItem(i, j, QTableWidgetItem('Empty'))
+                else:
+                    self.Btable.setItem(i, j, QTableWidgetItem('-'))
 
     def plot(self, solver):
-        pass
+        I_p1 = np.vectorize(
+            lambda t, I_p_hat: min(t / np.sqrt(1 + (1 - 1e-4 ** 2) / (1 - I_p_hat - 1e-4) ** 2 - 1 * t ** 2) + I_p_hat,
+                                   1))
+
+        I_d1 = np.vectorize(
+            lambda t, I_d_hat: min(np.log(1 + np.exp(np.log(2 * np.exp(1 - I_d_hat) - 1) * t)) - np.log(2) + I_d_hat,
+                                   1))
+
+        I_t1 = np.vectorize(lambda t, I_t_hat: max(I_t_hat * (1 - t ** 2), 0))
+
+        I1 = np.vectorize(lambda t, I_p_hat, I_d_hat, I_t_hat: I_p(t, I_p_hat) * I_d(t, I_d_hat) * I_t(t, I_t_hat))
+
+        i_t = I_t1(np.linspace(0, 1, 1001), solver.tables['I_t_hat'][self.i.value()][self.j.value()])
+        i_p = I_p1(np.linspace(0, 1, 1001), solver.tables['I_p_hat'][self.i.value()][self.j.value()])
+        i_d = I_d1(np.linspace(0, 1, 1001), solver.tables['I_d_hat'][self.i.value()][self.j.value()])
+        i = i_t * i_d * i_p
+
+        print(i)
+        self.canvas1.
+        self.canvas1.axes.plot(np.linspace(0, 1, 1001), i_t, lw=1, color='blue')
+        self.canvas2.axes.plot(np.linspace(0, 1, 1001), i_p, lw=1, color='green')
+        self.canvas3.axes.plot(np.linspace(0, 1, 1001), i_d, lw=1, color='red')
+        self.canvas4.axes.plot(np.linspace(0, 1, 1001), i, lw=1, color='brown')
+        self.canvas1.draw()
+        self.canvas2.draw()
+        self.canvas3.draw()
+        self.canvas4.draw()
 
     def execute(self):
         self.useStylePaletteCheckBox.setEnabled(False)
         solver = Solver(float(self.confidence_value.currentText()))
         solver.solve()
-        print(solver.intervals[0])
-        print(solver.intervals[1])
-        print(solver.intervals[2])
-        print(solver.intervals_right)
-        print(solver.t_plus_t_minus())
         self.view(solver)
+        self.plot(solver)
 
 
 def collect_data(path='data/sys_lab5.txt'):
@@ -217,8 +249,7 @@ class Solver:
         self.upper_bound = upper_bound
         self.select = lambda i, j: {k: v for k, v in zip(self.params,
                                                          [matrix.iat[i, j] for matrix in self.tables.values()])}
-        self.t_plus_t_minus = lambda: {'min': np.amax(self.intervals_left, axis=1),
-                                       'max': np.amax(self.intervals_right, axis=1)}
+        self.t_plus_t_minus = None
 
     def classificator(self):
         fuzzy_constraints = {
@@ -233,19 +264,20 @@ class Solver:
             0.8: [0.26, 0.56],
             0.9: [0.28, 0.58],
             1: [0.3, 0.6]}
-
-    def plot(self):
-        pass
+        for minimum in self.t_plus_t_minus['min']:
+            in_an_interval(minimum, fuzzy_constraints)
 
     def solve(self, lower_bound=0):
-        for i in range(4):
-            for j in range(7):
-                if self.mask.to_numpy()[i, j]:
-                    self.intervals[i][j] = IneqSolver(
-                        param_dict=self.select(i, j)
-                    ).solve(entropy, lower_bound, self.upper_bound).get_interval()
-                    self.intervals_left[i][j] = self.intervals[i][j][0]
-                    self.intervals_right[i][j] = self.intervals[i][j][1]
+        self.intervals = np.zeros((4, 7), dtype='f,f')
+        self.mask = self.tables['a_hat'] != 0
+        for i, j in product(range(4), range(7)):
+            if self.mask.to_numpy()[i, j]:
+                solution = IneqSolver(self.select(i, j)).solve(entropy, lower_bound, self.upper_bound).get_interval()
+                self.intervals[i][j] = tuple(solution)
+                self.intervals_left[i][j] = self.intervals[i][j][0]
+                self.intervals_right[i][j] = self.intervals[i][j][1]
+        self.t_plus_t_minus = {'min': np.amax(self.intervals_left, axis=0),
+                               'max': np.amax(self.intervals_right, axis=0)}
 
 
 if __name__ == '__main__':
