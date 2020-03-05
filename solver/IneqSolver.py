@@ -38,10 +38,10 @@ I = lambda t, I_p_hat, I_d_hat, I_t_hat: I_p(t, I_p_hat) * I_d(t, I_d_hat) * I_t
 
 
 def in_an_interval(number, intervals):
-    for interval in intervals:
-        if interval.values()[0] < number < interval.values()[1]:
-            return interval.key()
-    return [interval[0] < number < interval[1] for interval in intervals.values()]
+    for key in intervals.keys():
+        if intervals[key][0] < number < intervals[key][1]:
+            return key
+    return -1
 
 
 entropy = np.vectorize(

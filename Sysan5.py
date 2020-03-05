@@ -233,6 +233,7 @@ class UI(QDialog):
         solver.solve()
         self.view(solver)
         self.plot(solver)
+        solver.classificator()
 
 
 def collect_data(path='data/sys_lab5.txt'):
@@ -272,6 +273,9 @@ class Solver:
             1: [0.3, 0.6]}
         for minimum in self.t_plus_t_minus['min']:
             in_an_interval(minimum, fuzzy_constraints)
+
+        for maximum in self.t_plus_t_minus['max']:
+            in_an_interval(maximum, fuzzy_constraints)
 
     def solve(self, lower_bound=0):
         self.intervals = np.zeros((4, 7), dtype='f,f')
