@@ -19,7 +19,7 @@ class IneqSolver(object):
             end = np.argmin(self.solution[start:])
             return [self.linspace[start], self.linspace[end]]
         else:
-            return "Empty"
+            return [0, 0]
 
 
 def alpha(a_hat, I_p_hat, I_d_hat, I_t_hat):

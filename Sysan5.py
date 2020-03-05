@@ -1,13 +1,13 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt5.QtWidgets import QTableWidget, QLabel, QApplication, QLineEdit, QDialog, QGroupBox, \
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QApplication, QLineEdit, QDialog, QGroupBox, \
     QHBoxLayout, QComboBox, QGridLayout, QStyleFactory, QCheckBox, QPushButton, QWidget, QTableWidgetItem, QTabWidget
 from PyQt5.QtGui import QPalette, QColor, QIcon
 import sys
 from PyQt5.QtCore import Qt
 from sklearn.preprocessing import Normalizer
-import numpy as np
 import pandas as pd
+from solver.IneqSolver import *
 
 
 class Graph(FigureCanvas):
@@ -49,6 +49,7 @@ class UI(QDialog):
         self.MspinBox1 = QLineEdit("")
         self.bottomBox = QGroupBox("Results")
 
+        self.outputs = []
         self.results = QLabel()
         self.originalPalette = QApplication.palette()
         self.topBox = QHBoxLayout()
@@ -56,31 +57,26 @@ class UI(QDialog):
         self.setWindowTitle("Solver")
         self.setWindowIconText('Solver')
 
-        self.inputs = []
-        self.tabs = []
-        self.create_bottom_box()
-        self.create_middle_box()
         self.create_top_box()
+        self.create_middle_box()
+        self.create_bottom_box()
+
         self.canvas1 = Graph(self, width=6, height=3, dpi=100, title='Y1')
         self.canvas2 = Graph(self, width=6, height=3, dpi=100, title='Y2')
         self.canvas3 = Graph(self, width=6, height=3, dpi=100, title='Y3')
         self.canvas4 = Graph(self, width=6, height=3, dpi=100, title='Y4')
 
         self.mainLayout = QGridLayout()
-
         self.mainLayout.addLayout(self.topBox, 0, 0, 1, 6)
         self.mainLayout.addWidget(self.middleBox, 1, 2, 1, 2)
         self.mainLayout.addWidget(self.bottomBox, 2, 2, 2, 2)
-
         self.mainLayout.addWidget(self.canvas1, 1, 0)
         self.mainLayout.addWidget(self.canvas2, 2, 0)
         self.mainLayout.addWidget(self.canvas3, 1, 4)
         self.mainLayout.addWidget(self.canvas4, 2, 4)
 
         self.setLayout(self.mainLayout)
-
-        self.resize(1300, 600)
-
+        self.resize(1360, 600)
         self.change_palette()
 
     def change_palette(self):
@@ -153,13 +149,10 @@ class UI(QDialog):
 
     def create_bottom_box(self):
 
-        self.inputs.append(self.MspinBox1)
-
-        self.inputs.append(self.MspinBox2)
-
-        self.inputs.append(self.MspinBox3)
-
-        self.inputs.append(self.MspinBox4)
+        self.outputs.append(self.MspinBox1)
+        self.outputs.append(self.MspinBox2)
+        self.outputs.append(self.MspinBox3)
+        self.outputs.append(self.MspinBox4)
 
         layout = QGridLayout()
 
@@ -173,22 +166,31 @@ class UI(QDialog):
         layout.addWidget(self.Mlabel4, 3, 0)
 
         self.bottomBox.setFixedWidth(645)
-
         self.bottomBox.setLayout(layout)
 
     def clr(self):
         self.Btable.clear()
 
-    def view_results(self, solver):
-        for i in range(self.Btable.rowCount()):
-            for j in range(self.Btable.colorCount()):
-                self.Btable.setItem(i, j, '[' + str(solver.intervals_left) + ' ; ' + str(solver.intervals_right) + ']')
+    def view(self, solver):
+        for i in range(4):
+            for j in range(7):
+                if sum(solver.intervals[i][j]) != 0:
+                    self.Btable.setItem(i,
+                                        j,
+                                        QTableWidgetItem(str(np.round(np.array(
+                                            solver.intervals[i][j]), 3))))
+                else:
+                    self.Btable.setItem(i, j, QTableWidgetItem('Empty'))
+
+    def plot(self, solver):
         pass
 
     def execute(self):
         self.useStylePaletteCheckBox.setEnabled(False)
         solver = Solver(float(self.confidence_value.currentText()))
         solver.solve()
+        print(solver.intervals)
+        self.view(solver)
 
 
 def collect_data(path='data/sys_lab5.txt'):
@@ -202,25 +204,30 @@ def collect_data(path='data/sys_lab5.txt'):
 
 class Solver:
     def __init__(self, confidence_interval):
-        self.intervals_left = None
-        self.intervals_right = None
-        self.mask = collect_data()[0] != 0
+        self.intervals = [[[0, 0]]*7]*4
         self.params = ['a_hat', 'I_p_hat', 'I_t_hat', 'I_d_hat']
         self.tables = {k: v for k, v in zip(self.params, list(collect_data()))}
+        self.mask = self.tables['a_hat'] != 0
         self.confidence_interval = confidence_interval
         self.select = lambda i, j: {k: v for k, v in zip(self.params,
                                                          [matrix.iat[i, j] for matrix in self.tables.values()])}
-        self.t_plus_t_minus = {'min': self.intervals_left.apply(min, axis=1),
-                               'max': self.intervals_right.apply(max, axis=1)}
+        # self.t_plus_t_minus = {'min': self.intervals.apply(min, axis=1),
+        #
+        #                       'max': self.intervals.apply(max, axis=1)}
 
     def classificator(self):
-        transformer_intervals_left = Normalizer().fit_transform(self.intervals_left.to_numpy())
-        transformer_intervals_right = Normalizer().fit_transform(self.intervals_right.to_numpy())
+        # transformer_intervals_left = Normalizer().fit_transform(self.intervals_left.to_numpy())
+        # transformer_intervals_right = Normalizer().fit_transform(self.intervals_right.to_numpy())
         trasformer_t_minus = np.arange(1, 0, -0.1)
         trasformer_t_plus = np.arange(1, 12)
 
     def solve(self):
-        pass
+        for i in range(4):
+            for j in range(7):
+                if self.mask.to_numpy()[i, j]:
+                    self.intervals[i][j] = IneqSolver(
+                        param_dict=self.select(i, j)
+                    ).solve(entropy, 0, self.confidence_interval).get_interval()
 
 
 if __name__ == '__main__':
