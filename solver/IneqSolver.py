@@ -10,8 +10,8 @@ class IneqSolver(object):
         ) * (f(t, **params) >= bound1)
 
     def solve(self, func, bound1, bound2):
-        self.solution = self.inequlity(func, self.linspace, bound1, bound2, self.params)
-        return self.solution
+        self.solution = self.inequlity(func, self.linspace, bound1, bound2, self.param_dict)
+        return self
 
     def get_interval(self):
         if np.linalg.norm(self.solution):
