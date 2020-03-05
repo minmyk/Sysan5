@@ -178,6 +178,8 @@ class UI(QDialog):
 
     def clr(self):
         self.Btable.clear()
+        for i in range(4):
+            self.outputs[i].clear()
 
     def view(self, solver):
         for i in range(4):
@@ -233,7 +235,9 @@ class UI(QDialog):
         solver.solve()
         self.view(solver)
         self.plot(solver)
-        solver.classificator()
+        for i in range(4):
+            self.outputs[i].clear()
+            self.outputs[i].setText(solver.classificator()[i])
 
 
 def collect_data(path='data/sys_lab5.txt'):
@@ -259,23 +263,15 @@ class Solver:
         self.t_plus_t_minus = None
 
     def classificator(self):
-        fuzzy_constraints = {
-            0: [0.1, 0.4],
-            0.1: [0.12, 0.42],
-            0.2: [0.14, 0.44],
-            0.3: [0.16, 0.46],
-            0.4: [0.18, 0.48],
-            0.5: [0.2, 0.5],
-            0.6: [0.22, 0.52],
-            0.7: [0.24, 0.54],
-            0.8: [0.26, 0.56],
-            0.9: [0.28, 0.58],
-            1: [0.3, 0.6]}
-        for minimum in self.t_plus_t_minus['min']:
-            in_an_interval(minimum, fuzzy_constraints)
-
-        for maximum in self.t_plus_t_minus['max']:
-            in_an_interval(maximum, fuzzy_constraints)
+        states = []
+        for interval in self.t_plus_t_minus:
+            if (interval[1] - interval[0]) / interval[1] > 0.66:
+                states.append('Normal situation')
+            elif 0.33 < (interval[1] - interval[0]) / interval[1] < 0.66:
+                states.append('Potential hazard')
+            else:
+                states.append('Emergency')
+        return states
 
     def solve(self, lower_bound=0):
         self.intervals = np.zeros((4, 7), dtype='f,f')
@@ -286,8 +282,8 @@ class Solver:
                 self.intervals[i][j] = tuple(solution)
                 self.intervals_left[i][j] = self.intervals[i][j][0]
                 self.intervals_right[i][j] = self.intervals[i][j][1]
-        self.t_plus_t_minus = {'min': np.amax(self.intervals_left, axis=0),
-                               'max': np.amax(self.intervals_right, axis=0)}
+        self.t_plus_t_minus = [(a, b) for a, b in zip(np.amax(self.intervals_left, axis=0),
+                               np.amax(self.intervals_right, axis=0))]
 
 
 if __name__ == '__main__':
