@@ -210,11 +210,14 @@ class UI(QDialog):
         i_d = I_d1(np.linspace(0, 1, 1001), solver.tables['I_d_hat'][self.i.value()][self.j.value()])
         i = i_t * i_d * i_p
 
-        print(i)
         self.canvas1.axes.clear()
         self.canvas2.axes.clear()
         self.canvas3.axes.clear()
         self.canvas4.axes.clear()
+        self.canvas1.axes.set_title('I_t')
+        self.canvas2.axes.set_title('I_p')
+        self.canvas3.axes.set_title('I_d')
+        self.canvas4.axes.set_title('I')
         self.canvas1.axes.plot(np.linspace(0, 1, 1001), i_t, lw=1, color='blue')
         self.canvas2.axes.plot(np.linspace(0, 1, 1001), i_p, lw=1, color='green')
         self.canvas3.axes.plot(np.linspace(0, 1, 1001), i_d, lw=1, color='red')
