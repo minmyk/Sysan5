@@ -189,7 +189,6 @@ class UI(QDialog):
         self.useStylePaletteCheckBox.setEnabled(False)
         solver = Solver(float(self.confidence_value.currentText()))
         solver.solve()
-        print(solver.intervals)
         self.view(solver)
 
 
