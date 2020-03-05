@@ -1,6 +1,6 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QApplication, QLineEdit, QDialog, QGroupBox, \
+from PyQt5.QtWidgets import QTableWidget, QLabel, QApplication, QLineEdit, QDialog, QGroupBox, \
     QHBoxLayout, QComboBox, QGridLayout, QStyleFactory, QCheckBox, QPushButton, QWidget, QTableWidgetItem, QTabWidget
 from PyQt5.QtGui import QPalette, QColor, QIcon
 import sys
@@ -174,11 +174,11 @@ class UI(QDialog):
     def view(self, solver):
         for i in range(4):
             for j in range(7):
-                if sum(solver.intervals[i][j]) != 0:
+                if solver.intervals_left[i][j] != 0 and solver.intervals_right[i][j] != 0:
                     self.Btable.setItem(i,
                                         j,
-                                        QTableWidgetItem(str(np.round(np.array(
-                                            solver.intervals[i][j]), 3))))
+                                        QTableWidgetItem('[' + str(np.round(solver.intervals_left[i][j], 2)) +
+                                                         ' ; ' + str(np.round(solver.intervals_right[i][j], 2)) + ']'))
                 else:
                     self.Btable.setItem(i, j, QTableWidgetItem('Empty'))
 
@@ -189,6 +189,11 @@ class UI(QDialog):
         self.useStylePaletteCheckBox.setEnabled(False)
         solver = Solver(float(self.confidence_value.currentText()))
         solver.solve()
+        print(solver.intervals[0])
+        print(solver.intervals[1])
+        print(solver.intervals[2])
+        print(solver.intervals_right)
+        print(solver.t_plus_t_minus())
         self.view(solver)
 
 
@@ -202,31 +207,45 @@ def collect_data(path='data/sys_lab5.txt'):
 
 
 class Solver:
-    def __init__(self, confidence_interval):
+    def __init__(self, upper_bound):
         self.intervals = [[[0, 0]]*7]*4
+        self.intervals_left = np.zeros((4, 7))
+        self.intervals_right = np.zeros((4, 7))
         self.params = ['a_hat', 'I_p_hat', 'I_t_hat', 'I_d_hat']
         self.tables = {k: v for k, v in zip(self.params, list(collect_data()))}
         self.mask = self.tables['a_hat'] != 0
-        self.confidence_interval = confidence_interval
+        self.upper_bound = upper_bound
         self.select = lambda i, j: {k: v for k, v in zip(self.params,
                                                          [matrix.iat[i, j] for matrix in self.tables.values()])}
-        # self.t_plus_t_minus = {'min': self.intervals.apply(min, axis=1),
-        #
-        #                       'max': self.intervals.apply(max, axis=1)}
+        self.t_plus_t_minus = lambda: {'min': np.amax(self.intervals_left, axis=1),
+                                       'max': np.amax(self.intervals_right, axis=1)}
 
     def classificator(self):
-        # transformer_intervals_left = Normalizer().fit_transform(self.intervals_left.to_numpy())
-        # transformer_intervals_right = Normalizer().fit_transform(self.intervals_right.to_numpy())
-        trasformer_t_minus = np.arange(1, 0, -0.1)
-        trasformer_t_plus = np.arange(1, 12)
+        fuzzy_constraints = {
+            0: [0.1, 0.4],
+            0.1: [0.12, 0.42],
+            0.2: [0.14, 0.44],
+            0.3: [0.16, 0.46],
+            0.4: [0.18, 0.48],
+            0.5: [0.2, 0.5],
+            0.6: [0.22, 0.52],
+            0.7: [0.24, 0.54],
+            0.8: [0.26, 0.56],
+            0.9: [0.28, 0.58],
+            1: [0.3, 0.6]}
 
-    def solve(self):
+    def plot(self):
+        pass
+
+    def solve(self, lower_bound=0):
         for i in range(4):
             for j in range(7):
                 if self.mask.to_numpy()[i, j]:
                     self.intervals[i][j] = IneqSolver(
                         param_dict=self.select(i, j)
-                    ).solve(entropy, 0, self.confidence_interval).get_interval()
+                    ).solve(entropy, lower_bound, self.upper_bound).get_interval()
+                    self.intervals_left[i][j] = self.intervals[i][j][0]
+                    self.intervals_right[i][j] = self.intervals[i][j][1]
 
 
 if __name__ == '__main__':

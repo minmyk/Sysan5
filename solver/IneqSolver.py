@@ -44,6 +44,10 @@ def I(t, I_p_hat, I_d_hat, I_t_hat):
     return I_p(t, I_p_hat) * I_d(t, I_d_hat) * I_t(t, I_t_hat)
 
 
+def in_an_interval(array, interval):
+    return [interval[0] < element < interval[1] for element in array]
+
+
 entropy = np.vectorize(
     lambda t, a_hat, I_p_hat, I_d_hat, I_t_hat: 1
     - np.log(
