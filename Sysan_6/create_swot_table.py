@@ -76,7 +76,6 @@ class Parasha:
         so = pd.DataFrame(index=self.strengths, columns=self.opportunities)
         wt = pd.DataFrame(index=self.weaknesses, columns=self.threats)
         wo = pd.DataFrame(index=self.weaknesses, columns=self.opportunities)
-        print(threats_letters)
         self.st_letters = pd.DataFrame(index=strengths_letters, columns=threats_letters)
         self.so_letters = pd.DataFrame(index=strengths_letters, columns=opportunities_letters)
         self.wt_letters = pd.DataFrame(index=weaknesses_letters, columns=threats_letters)

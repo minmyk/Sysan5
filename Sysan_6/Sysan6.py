@@ -196,7 +196,7 @@ class SWOTComponentMatrix(object):
 def initialize():
     """ by Vamdemon """
     databank = Parasha()
-
+    databank.parasha()
     so = databank.so_letters
     st = databank.st_letters
     wo = databank.wo_letters
@@ -298,7 +298,7 @@ def vikor(w=np.array([1 / 44] * 44), v=0.51):
 
     # 2nd stage
 
-    # print(w)
+    print(e)
 
     s = [sum([w[j] * (best_e[j] - e[i, j]) / (best_e[j] - worst_e[j])
               for j in range(r)]) for i in range(n)]
@@ -307,6 +307,7 @@ def vikor(w=np.array([1 / 44] * 44), v=0.51):
     r = np.array([np.max([(w[j] * (best_e[j] - e[i, j])) / (best_e[j] - worst_e[j])
                           for j in range(r)]) for i in range(n)])
     # 4th stage
+    print(e)
     best_r = np.max(r)
     best_s = np.max(s)
 
@@ -369,8 +370,8 @@ class UI(QDialog):
 
         self.bottomBox = QTabWidget()
 
-        self.Mlabel2 = QLabel("Optimal weights TOPSAS:")
-        self.Mlabel1 = QLabel("Optimal weights VIKTOR:")
+        self.Mlabel2 = QLabel("Optimal weights TOPSIS:")
+        self.Mlabel1 = QLabel("Optimal weights VITOR:")
         self.MspinBox2 = QLineEdit("")
         self.MspinBox1 = QLineEdit("")
         self.middleBox = QGroupBox("Optimal strategies")
@@ -443,10 +444,14 @@ class UI(QDialog):
                 self.tables[index].setRowCount(12)
             else:
                 self.tables[index].setRowCount(10)
-            self.tables[index].setHorizontalHeaderLabels(["Strength level", "F"])
             header = self.tables[index].horizontalHeader()
             header.setSectionResizeMode(0, QHeaderView.Stretch)
             header.setSectionResizeMode(1, QHeaderView.Stretch)
+
+        self.tables[0].setHorizontalHeaderLabels(["Strength level", "F"])
+        self.tables[1].setHorizontalHeaderLabels(["Weakness level", "F"])
+        self.tables[2].setHorizontalHeaderLabels(["Opportunities level", "F"])
+        self.tables[3].setHorizontalHeaderLabels(["Threats level", "F"])
 
         self.tab1hbox.setContentsMargins(5, 5, 5, 5)
         self.tab1hbox.addWidget(self.tables[0])
@@ -466,8 +471,10 @@ class UI(QDialog):
         self.outputs.append(self.MspinBox2)
 
         layout = QGridLayout()
-        self.MspinBox1.setPlaceholderText("Here will be displayed optimal VITOR strategies after calculations")
-        self.MspinBox2.setPlaceholderText("Here will be displayed optimal TOP SAS strategies after calculations")
+        self.MspinBox1.setPlaceholderText("Here will be displayed optimal VITOR strategy "
+                                          "after calculations are finished.")
+        self.MspinBox2.setPlaceholderText("Here will be displayed optimal TOPSIS strategy "
+                                          "after calculations are finished.")
         layout.addWidget(self.MspinBox1, 0, 1, 1, 4)
         layout.addWidget(self.MspinBox2, 1, 1, 1, 4)
         layout.addWidget(self.Mlabel1, 0, 0, 1, 1)
@@ -476,14 +483,15 @@ class UI(QDialog):
         self.middleBox.setLayout(layout)
 
     def clr(self):
-        pass
+        self.MspinBox1.setText("")
+        self.MspinBox2.setText("")
 
     def execute(self):
-        self.useStylePaletteCheckBox.setEnabled(False)
+        self.clr()
         swot = initialize()
         scores = get_weights(swot)
-        strategy_topsis = topsis()
-        strategy_vikor = vikor(swot)
+        self.MspinBox1.setText(vikor())
+        self.MspinBox2.setText(topsis())
 
 
 if __name__ == '__main__':
