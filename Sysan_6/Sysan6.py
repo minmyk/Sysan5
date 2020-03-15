@@ -298,7 +298,7 @@ def vikor(w=np.array([1 / 44] * 44), v=0.51):
 
     # 2nd stage
 
-    print(e)
+    # print(e)
 
     s = [sum([w[j] * (best_e[j] - e[i, j]) / (best_e[j] - worst_e[j])
               for j in range(r)]) for i in range(n)]
@@ -307,7 +307,7 @@ def vikor(w=np.array([1 / 44] * 44), v=0.51):
     r = np.array([np.max([(w[j] * (best_e[j] - e[i, j])) / (best_e[j] - worst_e[j])
                           for j in range(r)]) for i in range(n)])
     # 4th stage
-    print(e)
+    # print(e)
     best_r = np.max(r)
     best_s = np.max(s)
 
@@ -485,6 +485,17 @@ class UI(QDialog):
     def clr(self):
         self.MspinBox1.setText("")
         self.MspinBox2.setText("")
+        for table in self.tables:
+            table.clearContents()
+
+    def fill_table(self, table_index, table_to_fill):
+        for index in range(len(table_to_fill.to_numpy())):
+            item1 = QTableWidgetItem(list(table_to_fill.index)[index])
+            item1.setTextAlignment(Qt.AlignHCenter)
+            self.tables[table_index].setItem(index, 0, item1)
+            item2 = QTableWidgetItem(str(np.round(table_to_fill.to_numpy(), 3)[index]))
+            item2.setTextAlignment(Qt.AlignHCenter)
+            self.tables[table_index].setItem(index, 1, item2)
 
     def execute(self):
         self.clr()
@@ -492,6 +503,10 @@ class UI(QDialog):
         scores = get_weights(swot)
         self.MspinBox1.setText(vikor())
         self.MspinBox2.setText(topsis())
+        self.fill_table(0, scores[2])
+        self.fill_table(1, scores[3])
+        self.fill_table(2, scores[1])
+        self.fill_table(3, scores[0])
 
 
 if __name__ == '__main__':
