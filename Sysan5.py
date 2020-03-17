@@ -117,7 +117,6 @@ class UI(QDialog):
         self.useStylePaletteCheckBox.setChecked(True)
         self.reset.setFlat(True)
         self.run.setFlat(True)
-
         self.topBox.addWidget(self.confidence_label)
         self.topBox.addWidget(self.confidence_value)
         self.topBox.addStretch(1)
@@ -195,21 +194,19 @@ class UI(QDialog):
                     self.Btable.setItem(i, j, QTableWidgetItem('-'))
 
     def plot(self, solver):
-        I_p1 = np.vectorize(
+        i_p1 = np.vectorize(
             lambda t, I_p_hat: min(t / np.sqrt(1 + (1 - 1e-4 ** 2) / (1 - I_p_hat - 1e-4) ** 2 - 1 * t ** 2) + I_p_hat,
                                    1))
 
-        I_d1 = np.vectorize(
+        i_d1 = np.vectorize(
             lambda t, I_d_hat: min(np.log(1 + np.exp(np.log(2 * np.exp(1 - I_d_hat) - 1) * t)) - np.log(2) + I_d_hat,
                                    1))
 
-        I_t1 = np.vectorize(lambda t, I_t_hat: max(I_t_hat * (1 - t ** 2), 0))
+        i_t1 = np.vectorize(lambda t, I_t_hat: max(I_t_hat * (1 - t ** 2), 0))
 
-        I1 = np.vectorize(lambda t, I_p_hat, I_d_hat, I_t_hat: I_p(t, I_p_hat) * I_d(t, I_d_hat) * I_t(t, I_t_hat))
-
-        i_t = I_t1(np.linspace(0, 1, 1001), solver.tables['I_t_hat'][self.i.value()][self.j.value()])
-        i_p = I_p1(np.linspace(0, 1, 1001), solver.tables['I_p_hat'][self.i.value()][self.j.value()])
-        i_d = I_d1(np.linspace(0, 1, 1001), solver.tables['I_d_hat'][self.i.value()][self.j.value()])
+        i_t = i_t1(np.linspace(0, 1, 1001), solver.tables['I_t_hat'][self.i.value()][self.j.value()])
+        i_p = i_p1(np.linspace(0, 1, 1001), solver.tables['I_p_hat'][self.i.value()][self.j.value()])
+        i_d = i_d1(np.linspace(0, 1, 1001), solver.tables['I_d_hat'][self.i.value()][self.j.value()])
         i = i_t * i_d * i_p
 
         self.canvas1.axes.clear()
