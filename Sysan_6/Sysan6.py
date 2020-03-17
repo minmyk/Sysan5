@@ -129,13 +129,6 @@ class SWOTComponentMatrix(object):
             header_color(str): html hex code of color
         Returns:
         """
-        # Set CSS properties for th elements in dataframe
-        th_props = [
-            ('font-size', str(fontsize) + 'pt'),
-            ('text-align', text_align),
-            ('color', '#00000'),
-            ('background-color', '#a9bcb8')
-        ]
 
         # Set CSS properties for td elements in dataframe
         def hover(hover_color="#add8e6"):
